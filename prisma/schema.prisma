@@ -1,0 +1,97 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  name String
+  image String?
+  email String? @unique
+  emailVerified DateTime?
+  emailToken String? @unique
+  hashedPassword String?
+  passwordToken String? @unique
+  passwordTokenExpiry DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  coins Int @default(100)
+  favoriteIds String[] @db.ObjectId
+  sessions Session[]
+  accounts Account[]
+  properties Property[]
+}
+
+model Account {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @db.ObjectId
+  type String
+  provider String
+  providerAccountId String
+  refresh_token String? @db.String
+  access_token String? @db.String
+  expires_at Int?
+  token_type String?
+  scope String?
+  id_token String? @db.String
+  session_state String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  session_token String @unique
+  userId String @db.ObjectId
+  expires DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  identifier String
+  token String @unique
+  expires DateTime
+
+  @@unique([identifier, token])
+}
+
+model Property {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @db.ObjectId
+  title String
+  description String?
+  address String
+  city String
+  zip String
+  municipality String
+  state String
+  size Int
+  yearBuilt Int?
+  featured Boolean @default(false)
+  thumbnailUrl String?
+  images String[] @default([])
+  amenities String[] @default([])
+  price String
+  bedrooms Int
+  bathrooms Int
+  category String
+  type String
+  yard String
+  yardSize Int?
+  substitution String?
+  createdAt DateTime @default(now())
+  status String @default("Aktivna")
+  latLong Float[] @default([0, 0])
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
